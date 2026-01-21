@@ -9,4 +9,5 @@ function tau = linearFrictionModel(a, qd)
 % Outputs:
 %   tau - troque due to friction
 % -------------------------------------------------------------------
-tau = a(1)*qd + a(2)*sign(qd) + a(3);
+alpha = 100; % 平滑系数
+tau = a(1)*qd + a(2)*tanh(alpha * qd) + a(3);
