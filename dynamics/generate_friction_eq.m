@@ -8,7 +8,7 @@ pi_frcn = sym('pi_frcn_%d%d', [18,1], 'real');
 
 % Friction torque
 pi_frcn_tmp = reshape(pi_frcn, [3, 6])';
-tau_frcn = pi_frcn_tmp(:,1).*qd_sym + pi_frcn_tmp(:,2).*sign(qd_sym) + pi_frcn_tmp(:,3);
+tau_frcn = pi_frcn_tmp(:,1).*qd_sym + pi_frcn_tmp(:,2).*tanh(qd_sym/0.001) + pi_frcn_tmp(:,3);
 
 % Generate a fucnction from symbolic expressions
 matlabFunction(tau_frcn, 'File','autogen/F_vctr_fcn',...
