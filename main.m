@@ -1,4 +1,4 @@
-clear all; close all; clc;
+clear ; close all; clc;
 
 % Define path to a urdf file
 path_to_urdf = 'URe/urdf/ur10e.urdf';
@@ -12,8 +12,8 @@ generate_friction_eq();
 
 % Generate regressors for inverse dynamics of the robot, friction and load
 % Note that it might take some time
-generate_rb_regressor(path_to_urdf);
-generate_load_regressor(path_to_urdf);
+% generate_rb_regressor(path_to_urdf);
+% generate_load_regressor(path_to_urdf);
 
 
 % Run tests
@@ -44,7 +44,7 @@ sol = estimate_dynamic_params(path_to_est_data, idxs, ...
 path_to_val_data = 'dataset_ur10e/validation_data/ur-20_01_17-ptp_10_points.csv';     idxs = [700, 4200];
 
 rre = validate_dynamic_params(path_to_val_data, idxs, ...
-                              drive_gains, baseQR, sol.pi_b, sol.pi_fr)
+                              drive_gains, baseQR, sol.pi_b, sol.pi_fr);
 
 
 
