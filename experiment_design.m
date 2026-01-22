@@ -30,10 +30,10 @@ traj_par.t = 0:traj_par.t_smp:traj_par.T;  % time
 traj_par.N = 5;          % number of harmonics
 traj_par.q0 = deg2rad([0 0 0 0 0 0 ]');
 % Use different limit for positions for safety
-traj_par.q_min = -deg2rad([178 80 90 178 128 180]');
-traj_par.q_max =  deg2rad([178 80 90 178 128 180]');
+traj_par.q_min = -deg2rad([178 75 90 178 128 360]');
+traj_par.q_max =  deg2rad([178 75 90 178 128 360]');
 traj_par.qd_max = 0.7*deg2rad([180 180 225 225 225 225]');
-traj_par.q2d_max = 3*traj_par.qd_max;
+traj_par.q2d_max = 4*traj_par.qd_max;
 
 %  ----------------------------------------------------------------------
 % Otimization

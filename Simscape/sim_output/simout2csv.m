@@ -5,7 +5,7 @@ clear; clc;
 % 1. 设置输入文件
 % -------------------------------------------------------------------------
 % 在此处修改你要处理的 mat 文件名
-mat_filename = 'N3_0122.mat'; 
+mat_filename = 'better0122.mat'; 
 
 % 自动生成输出文件名
 [pathstr, name, ext] = fileparts(mat_filename);
