@@ -4,7 +4,16 @@ function generate_rb_dynamics(path_to_urdf)
 % and g vector: M(q) ddq + C(q, dq) dq + g(q) = tau
 % ----------------------------------------------------------------------
 
+% --- 新增打印提示 ---
+fprintf('\n==========================================================\n');
+fprintf('[INFO] 正在运行函数: generate_rb_dynamics\n');
+fprintf('[INFO] 功能说明: 基于拉格朗日法生成刚体动力学方程 (M, C, G 矩阵)\n');
+fprintf('[INFO] 正在解析 URDF 文件路径: %s\n', path_to_urdf);
+fprintf('[WARN] 注意: 符号运算过程可能非常耗时 (取决于 CPU 性能)，请耐心等待...\n');
+fprintf('==========================================================\n\n');
+
 % Parse urdf to get robot description
+fprintf('>> [1/5] 正在解析 URDF 文件...\n');
 ur10 = parse_urdf(path_to_urdf);
 
 % Create symbolic generilized coordiates, their first and second deriatives
@@ -15,6 +24,7 @@ q2d_sym = sym('q2d%d',[6,1],'real');
 % ------------------------------------------------------------------------
 % Getting gradient of energy functions, to derive dynamics
 % ------------------------------------------------------------------------
+fprintf('>> [2/5] 正在计算连杆变换矩阵与能量函数...\n');
 T_pk = sym(zeros(4,4,6)); % transformation between links
 w_kk(:,1) = sym(zeros(3,1)); % angular velocity k in frame k
 v_kk(:,1) = sym(zeros(3,1)); % linear velocity of the origin of frame k in frame k
@@ -55,6 +65,7 @@ beta_Lf = [beta_K(1,:) - beta_P(1,:), beta_K(2,:) - beta_P(2,:),...
          beta_K(5,:) - beta_P(5,:), beta_K(6,:) - beta_P(6,:)];
 
 % Lagrangian dynamics
+fprintf('>> [3/5] 正在构建拉格朗日动力学方程 (这可能需要一点时间)...\n');
 pi_sndrd_sym = sym('pi%d%d', [60,1], 'real'); % standard parameters
 Lagr = beta_Lf*pi_sndrd_sym; % Lagrangian of the system
 P = [beta_P(1,:), beta_P(2,:), beta_P(3,:), beta_P(4,:),...
@@ -63,10 +74,12 @@ P = [beta_P(1,:), beta_P(2,:), beta_P(3,:), beta_P(4,:),...
 dLagr_dqd = jacobian(Lagr, qd_sym)';
 
 % Get inertia matrix M and gravity vector G
+fprintf('>> [4/5] 正在计算惯性矩阵 M 和 重力向量 G...\n');
 M_mtrx_sym = jacobian(dLagr_dqd, qd_sym);  
 G_vctr_sym = jacobian(P, q_sym)';
 
 % Get velocity matrix C using Christoffel symbols of the first kind
+fprintf('>> [5/5] 正在通过克里斯托费尔符号计算 C 矩阵 (计算量较大)...\n');
 cs1 = sym(zeros(6,6,6)); 
 for i = 1:1:6
     for j = 1:1:6
@@ -88,6 +101,8 @@ for i = 1:1:6
 end
 
 % Generate functions
+fprintf('>> [FINISH] 计算完成！正在将函数导出到 autogen/ 文件夹...\n');
+
 matlabFunction(M_mtrx_sym, 'File','autogen/M_mtrx_fcn',...
                'Vars',{q_sym, pi_sndrd_sym}, 'Optimize', true);               
 matlabFunction(C_mtrx_sym, 'File','autogen/C_mtrx_fcn',...
@@ -95,3 +110,5 @@ matlabFunction(C_mtrx_sym, 'File','autogen/C_mtrx_fcn',...
 matlabFunction(G_vctr_sym, 'File','autogen/G_vctr_fcn',...
                'Vars',{q_sym, pi_sndrd_sym}, 'Optimize', true);
 
+fprintf('[SUCCESS] 动力学方程生成完毕。\n\n');
+end

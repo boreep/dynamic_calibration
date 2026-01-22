@@ -25,15 +25,15 @@ optmznAlgorithm = 'patternsearch';
 % Trajectory parameters
 traj_par.T = 20;          % period of signal
 traj_par.wf = 2*pi/traj_par.T;    % fundamental frequency
-traj_par.t_smp = 0.01;   % sampling time
+traj_par.t_smp = 0.1;   % sampling time
 traj_par.t = 0:traj_par.t_smp:traj_par.T;  % time
 traj_par.N = 5;          % number of harmonics
 traj_par.q0 = deg2rad([0 0 0 0 0 0 ]');
 % Use different limit for positions for safety
-traj_par.q_min = -deg2rad([178 100 100 178 128 180]');
-traj_par.q_max =  deg2rad([178 100 100 178 128 180]');
+traj_par.q_min = -deg2rad([178 80 90 178 128 180]');
+traj_par.q_max =  deg2rad([178 80 90 178 128 180]');
 traj_par.qd_max = 0.7*deg2rad([180 180 225 225 225 225]');
-traj_par.q2d_max = 2*traj_par.qd_max;
+traj_par.q2d_max = 3*traj_par.qd_max;
 
 %  ----------------------------------------------------------------------
 % Otimization
@@ -48,9 +48,9 @@ if strcmp(optmznAlgorithm, 'patternsearch')
     optns_pttrnSrch.Display = 'iter';
     optns_pttrnSrch.StepTolerance = 1e-1;
     optns_pttrnSrch.FunctionTolerance = 10;
-    optns_pttrnSrch.ConstraintTolerance = 1e-6;
+    optns_pttrnSrch.ConstraintTolerance = 1e-4;
     optns_pttrnSrch.MaxTime = inf;
-    optns_pttrnSrch.MaxFunctionEvaluations = 1e+6;
+    optns_pttrnSrch.MaxFunctionEvaluations = 3e+5;
     
     [x,fval] = patternsearch(@(x)traj_cost_lgr(x,traj_par,baseQR), x0, ...
                              A, b, Aeq, beq, lb, ub, ...

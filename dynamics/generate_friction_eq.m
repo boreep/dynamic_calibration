@@ -1,5 +1,8 @@
 function generate_friction_eq()
-
+fprintf('\n==========================================================\n');
+fprintf('[INFO] 正在运行函数: generate_friction_eq\n');
+fprintf('[INFO] 功能说明: 生成关节摩擦力模型方程 (粘滞 + 库伦 + 偏置)\n');
+fprintf('==========================================================\n\n');
 % Create symbolic generilized coordiates, their first and second deriatives
 qd_sym = sym('qd%d',[6,1],'real');
 

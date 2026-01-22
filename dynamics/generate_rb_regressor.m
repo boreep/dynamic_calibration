@@ -4,8 +4,16 @@ function generate_rb_regressor(path_to_urdf)
 % the robot are rigid bodies. Thus the inverse dynamics can be written
 % in linear-in-parameters from: tau = Y(q, dq, ddq) pi
 % ---------------------------------------------------------------------
+% --- [INFO] Start ---
+fprintf('\n==========================================================\n');
+fprintf('[INFO] 正在运行函数: generate_rb_regressor\n');
+fprintf('[INFO] 功能说明: 生成标准回归矩阵 Y(q, dq, ddq)\n');
+fprintf('[INFO] 正在解析 URDF: %s\n', path_to_urdf);
+fprintf('[WARN] 警告: 此函数包含复杂的符号微分运算，耗时较长 (可能需要 5-10 分钟)，请喝杯咖啡耐心等待。\n');
+fprintf('==========================================================\n\n');
 
 % Parse urdf to get robot description
+fprintf('>> [1/6] 正在解析 URDF 文件...\n');
 ur10 = parse_urdf(path_to_urdf);
 
 % Create symbolic generilized coordiates, their first and second deriatives
@@ -16,6 +24,7 @@ q2d_sym = sym('q2d%d',[6,1],'real');
 % ------------------------------------------------------------------------
 % Getting gradient of energy functions, to derive dynamics
 % ------------------------------------------------------------------------
+fprintf('>> [2/6] 正在构建连杆坐标系变换与能量梯度 (Kinematics Loop)...\n');
 T_pk = sym(zeros(4,4,6)); % transformation between links
 w_kk(:,1) = sym(zeros(3,1)); % angular velocity k in frame k
 v_kk(:,1) = sym(zeros(3,1)); % linear velocity of the origin of frame k in frame k
@@ -55,18 +64,23 @@ end
 % ---------------------------------------------------------------------
 % Dynamic regressor of the full paramters
 % ---------------------------------------------------------------------
+fprintf('>> [3/6] 正在组装基础回归矩阵 beta_Lf...\n');
 beta_Lf = [beta_K(1,:) - beta_P(1,:), beta_K(2,:) - beta_P(2,:),...
          beta_K(3,:) - beta_P(3,:), beta_K(4,:) - beta_P(4,:),...
          beta_K(5,:) - beta_P(5,:), beta_K(6,:) - beta_P(6,:)];
+
+fprintf('>> [4/6] 正在计算雅可比矩阵 (Jacobian)... 这需要一点内存...\n');
 dbetaLf_dq = jacobian(beta_Lf,q_sym)';
 dbetaLf_dqd = jacobian(beta_Lf,qd_sym)';
 tf = sym(zeros(6,60));
+fprintf('>> [5/6] 正在计算回归矩阵的时间导数 (这是最慢的一步，请耐心等待)...\n');
 for i = 1:6
    tf = tf + diff(dbetaLf_dqd,q_sym(i))*qd_sym(i)+...
                 diff(dbetaLf_dqd,qd_sym(i))*q2d_sym(i);
 end
 Y_f = tf - dbetaLf_dq;
 
+fprintf('>> [6/6] 计算完成！正在将函数导出到文件: autogen/standard_regressor_UR10E.m ...\n');
 % Generate function from a symbolic expression for the regressor
 matlabFunction(Y_f,'File','autogen/standard_regressor_UR10E',...
                'Vars',{q_sym,qd_sym,q2d_sym});
