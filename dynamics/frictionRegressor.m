@@ -19,6 +19,6 @@ function frctn = frictionRegressor(qd_fltrd)
 noJoints = size(qd_fltrd,1);
 frctn = zeros(noJoints, noJoints*3);
 for i = 1:noJoints
-    frctn(i,3*i-2:3*i) = [qd_fltrd(i), tanh(qd_fltrd(i)/0.001), 1];
+    frctn(i,3*i-2:3*i) = [qd_fltrd(i), tanh(qd_fltrd(i)/0.002), 1];
 end
 
