@@ -16,7 +16,7 @@ path_to_urdf = 'URDF/RM65-6FB/urdf/RM65-6FB.urdf';
 ur10 = parse_urdf(path_to_urdf);
 
 % get mapping from full parameters to base parameters
-include_motor_dynamics = 0;
+include_motor_dynamics = 1;
 [~, baseQR] = base_params_qr(include_motor_dynamics);
 
 % Choose optimization algorithm: 'patternsearch', 'ga'
@@ -50,7 +50,7 @@ if strcmp(optmznAlgorithm, 'patternsearch')
     optns_pttrnSrch.FunctionTolerance = 10;
     optns_pttrnSrch.ConstraintTolerance = 1e-4;
     optns_pttrnSrch.MaxTime = inf;
-    optns_pttrnSrch.MaxFunctionEvaluations = 3e+5;
+    optns_pttrnSrch.MaxFunctionEvaluations = 5e+5;
     
     [x,fval] = patternsearch(@(x)traj_cost_lgr(x,traj_par,baseQR), x0, ...
                              A, b, Aeq, beq, lb, ub, ...
