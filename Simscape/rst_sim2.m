@@ -8,7 +8,8 @@ addpath('URDF/RM65-6FB/urdf/');
 ROBOT = importrobot('left_robot.urdf');
 showdetails(ROBOT);
 % show(ROBOT,'Frames','on','Visuals','on');
-ROBOT.Gravity = [0 0 -9.81];
+% ROBOT.Gravity = [0 0 -9.81];
+ROBOT.Gravity =[9.81 0 0];
 
 %% 1. 读取 CSV 数据 (替换 load .mat)
 % 确保文件路径正确，这里使用相对路径

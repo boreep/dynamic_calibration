@@ -18,10 +18,10 @@ function test_rb_inverse_dynamics(path_to_urdf)
     rbt.DataFormat = 'column';
     
     % [关键调试点 1] 重力向量
-    rbt.Gravity = [0 0 -9.81]; 
+    rbt.Gravity = [9.81,0,0]; 
     fprintf('MATLAB Robotics Toolbox Gravity set to: [%.2f %.2f %.2f]\n', rbt.Gravity);
 
-    no_iter = 5; % 先只跑5次，方便看打印
+    no_iter = 3; % 先只跑5次，方便看打印
     
     for i = 1:no_iter
         fprintf('\n--- Iteration %d ---\n', i);

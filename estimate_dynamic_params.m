@@ -29,6 +29,17 @@ function sol = estimate_dynamic_params(path_to_data, idx, drvGains, baseQR, meth
 % them result in slightly different dynamic parameters. Some of them
 % describe the dynamics better than others.
 % ------------------------------------------------------------------------
+
+% --- 修改开始 ---
+% 获取总参数数量（标准参数总数）
+n_total = size(baseQR.permutationMatrix, 1);
+% 获取基参数数量
+n_base = baseQR.numberOfBaseParameters;
+% 动态计算非独立参数数量 (不再硬编码为 26)
+n_dep = n_total - n_base;
+
+fprintf('[INFO] Total Params: %d, Base Params: %d, Dependent Params: %d\n', n_total, n_base, n_dep);
+% --- 修改结束 ---
 idntfcnTrjctry = parseURData(path_to_data, idx(1), idx(2));
 idntfcnTrjctry = filterData(idntfcnTrjctry);
 
@@ -42,8 +53,8 @@ idntfcnTrjctry = filterData(idntfcnTrjctry);
 % ---------------------------------------------------------------------
 sol = struct;
 if strcmp(method, 'OLS')
-    % Usual least squares
-    [sol.pi_b, sol.pi_fr] = ordinaryLeastSquareEstimation(Tau, Wb);
+    % [修正] 增加传入 baseQR 参数
+    [sol.pi_b, sol.pi_fr] = ordinaryLeastSquareEstimation(Tau, Wb, baseQR);
 elseif strcmp(method, 'PC-OLS')
     % Physically consistent OLS using SDP optimization
     [sol.pi_b, sol.pi_fr, sol.pi_s] = physicallyConsistentEstimation(Tau, Wb, baseQR);
@@ -86,34 +97,48 @@ function [Tau, Wb] = buildObservationMatrices(idntfcnTrjctry, baseQR, drvGains)
 end
 
 
-function [pib_OLS, pifrctn_OLS] = ordinaryLeastSquareEstimation(Tau, Wb)
+% [修正] 增加 baseQR 输入参数
+function [pib_OLS, pifrctn_OLS] = ordinaryLeastSquareEstimation(Tau, Wb, baseQR)
     % Function perfroms ordinary least squares estimation of parameters
     pi_OLS = (Wb'*Wb)\(Wb'*Tau);
 
-    pib_OLS = pi_OLS(1:40); % variables for base paramters
-    pifrctn_OLS = pi_OLS(41:end);
+    % [修正] 获取动态的基参数数量
+    n_base = baseQR.numberOfBaseParameters;
+
+    % [修正] 使用动态索引，不再写死 1:40
+    pib_OLS = pi_OLS(1:n_base); 
+    pifrctn_OLS = pi_OLS(n_base+1:end);
 end
 
 
 function [pib_SDP, pifrctn_SDP, pi_full] = physicallyConsistentEstimation(Tau, Wb, baseQR)
-    % Function estimation physically consistent parameters
-    % Ideally the user can choose between physical consistency and 
-    % so called semi-physical consistency, but right now it is hardcoded
+% --- [修正 1] 必须在函数内部重新计算维度，否则无法识别 n_base ---
+    n_total = size(baseQR.permutationMatrix, 1);
+    n_base = baseQR.numberOfBaseParameters;
+    n_dep = n_total - n_base;
+    fprintf('[INFO-SDP] Base: %d, Dependent: %d\n', n_base, n_dep);
+    % -----------------------------------------------------------
+
     physicalConsistency = 1;
 
-    pi_frctn = sdpvar(18,1); % variables for dependent parameters
-    pi_b = sdpvar(baseQR.numberOfBaseParameters,1); % variables for base paramters
-    pi_d = sdpvar(26,1); % variables for dependent paramters
+    pi_frctn = sdpvar(18,1); 
+    pi_b = sdpvar(n_base,1); % 现在这里可以识别 n_base 了
+    pi_d = sdpvar(n_dep,1);  % 现在这里可以识别 n_dep 了
 
-    % Bijective mapping from [pi_b; pi_d] to standard parameters pi
-    pii = baseQR.permutationMatrix*[eye(baseQR.numberOfBaseParameters), ...
+    % 映射矩阵
+    pii = baseQR.permutationMatrix*[eye(n_base), ...
                                     -baseQR.beta; ...
-                                    zeros(26,baseQR.numberOfBaseParameters), ... 
-                                    eye(26) ]*[pi_b; pi_d];
+                                    zeros(n_dep, n_base), ... 
+                                    eye(n_dep) ]*[pi_b; pi_d];
 
-    % Feasibility contrraints of the link paramteres and rotor inertia
+    % --- [修正 2] 质量约束 (请务必填入 RM65 的真实质量) ---
     mass_indexes = 10:11:66;
-    massValuesURDF = [7.778 12.93 3.87 1.96 1.96 0.202]';
+    
+    % [重要提示] 下面的数字必须替换为您运行 ur_tmp.robot.m 得到的 RM65 真实值！
+    % 目前这里看起来还是混合了 UR10 的数据，请检查！
+    % 例如: massValuesURDF = [3.5, 4.2, 1.8, 0.8, 0.8, 0.1]'; 
+    massValuesURDF = [5.0 5.0 3.87 1.96 1.96 3.0]'; 
+    
     errorRange = 0.10;
     massUpperBound = massValuesURDF*(1 + errorRange);
 
@@ -162,8 +187,8 @@ function [pib_SDP, pifrctn_SDP, pi_full] = physicallyConsistentEstimation(Tau, W
     pib_SDP = value(pi_b); % variables for base paramters
     pifrctn_SDP = value(pi_frctn);
 
-    pi_full = baseQR.permutationMatrix*[eye(baseQR.numberOfBaseParameters), ...
+    pi_full = baseQR.permutationMatrix*[eye(n_base), ...
                                         -baseQR.beta; ...
-                                        zeros(26,baseQR.numberOfBaseParameters), ... 
-                                        eye(26)]*[value(pi_b); value(pi_d)];
+                                        zeros(n_dep, n_base), ...  % [修改]
+                                        eye(n_dep)]*[value(pi_b); value(pi_d)]; % [修改]
 end

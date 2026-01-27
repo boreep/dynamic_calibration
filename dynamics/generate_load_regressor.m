@@ -26,7 +26,7 @@ fprintf('>> [2/5] 正在计算机械臂前向运动学 (Kinematics Loop)...\n');
 T_pk = sym(zeros(4,4,6)); % transformation between links
 w_kk(:,1) = sym(zeros(3,1)); % angular velocity k in frame k
 v_kk(:,1) = sym(zeros(3,1)); % linear velocity of the origin of frame k in frame k
-g_kk(:,1) = sym([0,0,9.81])'; % vector of graviatational accelerations in frame k
+g_kk(:,1) = sym([-9.81,0,0])'; % vector of graviatational accelerations in frame k
 p_kk(:,1) = sym(zeros(3,1)); % origin of frame k in frame k
 
 for i = 1:6
