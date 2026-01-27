@@ -111,4 +111,17 @@ matlabFunction(G_vctr_sym, 'File','autogen/G_vctr_fcn',...
                'Vars',{q_sym, pi_sndrd_sym}, 'Optimize', true);
 
 fprintf('[SUCCESS] 动力学方程生成完毕。\n\n');
+% ----------------------------------------------------------------------
+fprintf('>> [EXTRA] 正在生成末端(Link 6)正运动学位置函数...\n');
+
+% p_kk(:,7) 对应 Link 6 (末端) 的原点坐标
+pos_link6_sym = p_kk(:, 7); 
+
+% 生成名为 get_link6_pos.m 的函数
+matlabFunction(pos_link6_sym, ...
+               'File', 'autogen/get_link6_pos', ...
+               'Vars', {q_sym}, 'Optimize', true);
+
+fprintf('[SUCCESS] 末端位置函数 autogen/get_link6_pos.m 生成完毕。\n');
+
 end

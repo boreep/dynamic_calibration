@@ -34,7 +34,7 @@ drive_gains = ones(6,1);
 
 % Estimate dynamic parameters
 fprintf('开始辨识...\n');
-path_to_est_data = 'dataset_rm65fb\identification_data\N3_0122.csv';      idxs = [1, 4001];
+path_to_est_data = 'Simscape\sim_output\40s_identify_out.csv';      idxs = [1, 8001];
 % path_to_data = 'ur-20_02_12-40sec_12harm.csv';    idxs = [500, 4460];    
 % path_to_data = 'ur-20_02_05-20sec_8harm.csv';     idxs = [320, 2310];
 % path_to_data = 'ur-20_02_12-50sec_12harm.csv';    idxs = [355, 5090];
@@ -42,9 +42,9 @@ sol = estimate_dynamic_params(path_to_est_data, idxs, ...
                               drive_gains, baseQR, 'PC-OLS');
 
                          
-% Validate estimated parameters
+%% Validate estimated parameters
 fprintf('开始验证...\n');
-path_to_val_data = 'dataset_rm65fb\identification_data\N3_0122.csv';     idxs = [200, 2000];
+path_to_val_data = 'Simscape\sim_output\10s_verify_out.csv';     idxs = [200, 2000];
 
 rre = validate_dynamic_params(path_to_val_data, idxs, ...
                               drive_gains, baseQR, sol.pi_b, sol.pi_fr);

@@ -32,5 +32,6 @@ c(7:12) = max(q,[],2) - traj_par.q_max; % lower joint limit constraint
 c(13:18) = max(abs(qd),[],2) - traj_par.qd_max; % max joint velocity const
 c(19:24) = max(abs(q2d),[],2) - traj_par.q2d_max; % max joint acceleration constr
 
+
 % Equality contrsints
 ceq = [];

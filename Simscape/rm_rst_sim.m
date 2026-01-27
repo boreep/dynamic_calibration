@@ -20,15 +20,13 @@ dt = 0.005;
 %%
 config = homeConfiguration(ROBOT);
 show(ROBOT)
-% config(1).JointPosition = pi/4;
-% config(2).JointPosition = pi/6;
 show(ROBOT,config);
 % load urdf in simulink
 % RM65F_SC = smimport('RM65-6FB.urdf');
 
 %% 1. 准备 Simulink 需要的动力学参数
 %加载辨识结果到工作区
-load('RM65_Identified_Result.mat');
+% load('RM65_Identified_Result.mat');
 % 确保你已经有了 sol 和 baseQR 变量
 
 % 提取刚体基参数
@@ -42,7 +40,7 @@ dyn_params.pi_fr = sol.pi_fr;
 dyn_params.E = baseQR.permutationMatrix(:, 1:baseQR.numberOfBaseParameters);
 
 % 判断是否包含电机动力学 (用来决定调用哪个回归函数)
-dyn_params.include_motor = 0;
+dyn_params.include_motor = 1;
 if isfield(baseQR, 'motorDynamicsIncluded')
     dyn_params.include_motor = baseQR.motorDynamicsIncluded;
 end
